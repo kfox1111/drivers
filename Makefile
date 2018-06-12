@@ -17,9 +17,9 @@ IMAGE_NAME=hostpathplugin
 IMAGE_VERSION=canary
 IMAGE_TAG=$(REGISTRY_NAME)/$(IMAGE_NAME):$(IMAGE_VERSION)
 
-.PHONY: all flexadapter nfs hostpath iscsi cinder clean hostpath-container
+.PHONY: all flexadapter nfs hostpath image iscsi cinder clean hostpath-container
 
-all: flexadapter nfs hostpath iscsi cinder
+all: flexadapter nfs hostpath image iscsi cinder
 
 test:
 	go test github.com/kubernetes-csi/drivers/pkg/... -cover
@@ -33,6 +33,9 @@ nfs:
 hostpath:
 	if [ ! -d ./vendor ]; then dep ensure -vendor-only; fi
 	CGO_ENABLED=0 GOOS=linux go build -a -ldflags '-extldflags "-static"' -o _output/hostpathplugin ./app/hostpathplugin
+image:
+	if [ ! -d ./vendor ]; then dep ensure -vendor-only; fi
+	CGO_ENABLED=0 GOOS=linux go build -a -ldflags '-extldflags "-static"' -o _output/imageplugin ./app/imageplugin
 hostpath-container: hostpath
 	docker build -t $(IMAGE_TAG) -f ./app/hostpathplugin/Dockerfile .
 push: hostpath-container
